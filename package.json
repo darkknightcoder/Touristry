@@ -1,0 +1,14 @@
+{
+  "name": "touristry",
+  "version": "1.0.0",
+  "description": "Application for tourists to explore tourists to explore landmarks",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express.js": "^1.0.0"
+  }
+}
