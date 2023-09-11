@@ -11,6 +11,11 @@ app.get('/',(req,res)=>{
     res.render('homepage')
 })
 
+app.get('/Hotspots',(req,res)=>{
+    res.render("Hotspots/landingpage")
+})
+
+
 app.listen(3000,()=>{
     console.log("Serving on port 3k")
 })
