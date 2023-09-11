@@ -6,12 +6,12 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-mongoose
-    .connect(process.env.MONGO_URL)
-    .then(() => console.log("DB Connection Successful"))
-    .catch((err) => {
-        console.log(err);
-    });
+// mongoose
+//     .connect(process.env.MONGO_URL)
+//     .then(() => console.log("DB Connection Successful"))
+//     .catch((err) => {
+//         console.log(err);
+//     });
 
 app.engine('ejs', ejsMate)
 app.set('view engine', 'ejs');
@@ -24,6 +24,10 @@ app.get('/', (req, res) => {
 
 app.get('/Hotspots',(req,res)=>{
     res.render("Hotspots/landingpage")
+})
+
+app.get('/Hotspots/new', (req,res)=>{
+    res.render('Hotspots/newSpot')
 })
 
 app.listen(3000, () => {

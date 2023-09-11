@@ -1,0 +1,43 @@
+<%- layout('boilerplate') %>
+<div class="col-8 offset-2">
+    <h1 class="text-center">New Campground</h1>
+        <form action="" method="post">
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="floatingInput" placeholder="name@example.com">
+            <label for="floatingInput">Spot Name</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="floatingPassword" placeholder="Password">
+            <label for="floatingPassword">Location</label>
+        </div>
+        <div class="form-floating mb-3">
+            <select class="form-select" id="floatingSelect" aria-label="Floating label select example">
+                <option selected>Think of something later</option>
+                <option value="1">Bar/Pub</option>
+                <option value="2">Scenic</option>
+                <option value="3">Monumental</option>
+            </select>
+            <label for="floatingSelect">Works with selects</label>
+        </div>
+        <div class="mb-3">
+            <label for="basic-url" class="form-label">Images</label>
+            <div class="input-group">
+                <span class="input-group-text" id="basic-addon3">Enter Image URL</span>
+                <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+            </div>
+            <!-- <div class="form-text" id="basic-addon4">Example help text goes outside the input group.</div> -->
+        </div>
+        <div class="input-group mb-3">
+            <span class="input-group-text">$</span>
+            <input type="text" class="form-control" aria-label="Amount (to the nearest dollar)">
+            <span class="input-group-text">.00</span>
+        </div>
+        <div class="form-floating mb-3">
+            <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea"></textarea>
+            <label for="floatingTextarea">Description</label>
+        </div>
+        <div class="d-grid">
+            <button type="button" class="btn btn-outline-primary">Submit</button>
+        </div>
+    </form>
+</div>
