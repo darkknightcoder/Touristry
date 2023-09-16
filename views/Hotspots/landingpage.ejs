@@ -1,24 +1,19 @@
 <%- layout('boilerplate') %>
 
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top bg-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">Touristry</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <div class="navbar-nav">
-                <a class="nav-link" href="#">Homepage</a>
-                <a class="nav-link" href="#">Featured Spots</a>
-                <a class="nav-link" href="#">something</a>
-            </div>
-        </div>
-        <div class="navbar-nav ml-auto">
-            <a class="nav-link" href="/login">Login</a>
-            <a class="nav-link" href="/register">Register</a>
-        </div>
-    </div>
-  </nav> 
-
-
 <h1>View Page</h1>
+
+<div class="row row-cols-5">
+    <% for( let spot of spots){ %>
+        <div class="col">
+            <div class="card text-bg-dark">
+                <img src="<%=spot.image%>" class="card-img" alt=" ">
+                <div class="card-img-overlay">
+                  <h5 class="card-title"><%=spot.name%></h5>
+                  <p class="card-text"><%=spot.description%></p>
+                  <p class="card-text"><small>Last updated 3 mins ago</small></p>
+                  <a href="/Hotspots/viewSpot/<%=spot._id%>" class="btn btn-info">View</a>
+                </div>
+              </div>
+        </div>
+    <%}%>
+</div>

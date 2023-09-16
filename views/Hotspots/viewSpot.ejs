@@ -1,0 +1,29 @@
+<%- layout('boilerplate') %>
+
+
+<div class="col-10 offset-4">
+    <div class="col">
+        <h1><%=spot.name%></h1>
+        <h5><%=spot.location%></h5>
+    </div>
+    
+    <div class="col-md-4">
+        <img class="img-fluid" src="<%=spot.image%>" alt="">
+    </div>
+    
+    <div>
+        <h6>General cost of this spot is around $<%=spot.price%></h6>
+    </div>
+    
+    <div>
+        <h5>this is a <%=spot.Type%> Spot</h5>
+    </div>
+    
+    <div>
+        <p><%=spot.description%></p>
+    </div>
+    <a href="/Hotspots/viewspot/<%=spot._id%>/edit" type="button" class="btn btn-info">Edit</a>
+    <form action="/Hotspots/viewspot/<%=spot._id%>?_method=DELETE" method="post">
+        <button class="btn btn-danger">Delete</button>
+    </form>
+</div>
