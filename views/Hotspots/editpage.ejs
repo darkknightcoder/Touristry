@@ -1,13 +1,13 @@
 <%- layout('boilerplate') %>
 <div class="col-8 offset-2">
-    <h1 class="text-center">New Campground</h1>
-        <form action="/Hotspots" method="post">
+    <h1 class="text-center">Edit Campground</h1>
+        <form action="/Hotspots/viewspot/<%=spot._id%>?_method=PUT" method="POST">
         <div class="form-floating mb-3">
-            <input name="spot[name]" type="text" class="form-control" id="name" placeholder="Username">
+            <input value="<%=spot.name%>" name="spot[name]" type="text" class="form-control" id="name" placeholder="Username">
             <label for="name">Spot Name</label>
         </div>
         <div class="form-floating mb-3">
-            <input name="spot[location]" type="text" class="form-control" id="location">
+            <input value="<%=spot.location%>" name="spot[location]" type="text" class="form-control" id="location">
             <label for="location">Location</label>
         </div>
         <div class="form-floating mb-3">
@@ -29,11 +29,13 @@
         </div>
         <div class="input-group mb-3">
             <span class="input-group-text">$</span>
-            <input name="spot[price]" type="text" class="form-control" aria-label="Amount (to the nearest dollar)">
+            <input value="<%=spot.price%>" name="spot[price]" type="text" class="form-control" aria-label="Amount (to the nearest dollar)">
             <span class="input-group-text">.00</span>
         </div>
         <div class="form-floating mb-3">
-            <textarea name="spot[description]" class="form-control" placeholder="Leave a comment here" id="description"></textarea>
+            <textarea name="spot[description]" class="form-control" placeholder="Leave a comment here" id="description">
+                <%=spot.description%>
+            </textarea>
             <label for="description">Description</label>
         </div>
         <div class="d-grid">
