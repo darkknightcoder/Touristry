@@ -1,0 +1,19 @@
+<%- layout('boilerplate') %>
+
+<h1>View Page</h1>
+
+<div class="row row-cols-5">
+    <% for( let spot of spots){ %>
+        <div class="col">
+            <div class="card text-bg-dark">
+                <img src="<%=spot.image%>" class="card-img" alt=" ">
+                <div class="card-img-overlay">
+                  <h5 class="card-title"><%=spot.name%></h5>
+                  <p class="card-text"><%=spot.description%></p>
+                  <p class="card-text"><small>Last updated 3 mins ago</small></p>
+                  <a href="/Hotspots/viewSpot/<%=spot._id%>" class="btn btn-info">View</a>
+                </div>
+              </div>
+        </div>
+    <%}%>
+</div>
