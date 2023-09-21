@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 // const ImageSchema = new mongoose.Schema({
 //     url: String,
 //     filename: String
@@ -11,12 +10,18 @@ const mongoose = require("mongoose");
 
 const spotSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    image: {type: String},
-    Type: {type: String, required: true},
+    image: { type: String },
+    Type: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },
     location: { type: String, required: true },
-
+    reviews: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Review',
+            required: false
+        }
+    ]
 });
 
-module.exports = mongoose.model("Spot",spotSchema);
+module.exports = mongoose.model("Spot", spotSchema);
