@@ -5,7 +5,10 @@ const mongoose = require('mongoose');
 const dotenv = require("dotenv");
 const Spot = require('./models/spots');
 const User = require('./models/user');
+const Review = require('./models/reviews');
+const { verifyToken, verifyTokenAndAuthorize } = require("./verifyToken")
 const CryptoJS = require("crypto-js");
+const jwt = require("jsonwebtoken");
 const methodOverride = require('method-override');
 
 dotenv.config();
@@ -34,7 +37,7 @@ app.get('/Hotspots/new', (req, res) => {
     res.render('Hotspots/newSpot');
 })
 
-app.post('/Hotspots', async (req, res) => {
+app.post('/Hotspots', verifyTokenAndAuthorize, async (req, res) => {
     const spot = new Spot(req.body.spot);
     await spot.save();
     console.log(spot);
@@ -56,13 +59,13 @@ app.get('/Hotspots/viewspot/:id/edit', async (req, res) => {
     res.render('Hotspots/editpage', { spot });
 })
 
-app.put('/Hotspots/viewspot/:id', async (req, res) => {
+app.put('/Hotspots/viewspot/:id', verifyTokenAndAuthorize, async (req, res) => {
     const { id } = req.params;
     const spot = await Spot.findByIdAndUpdate(id, { ...req.body.spot });
     res.redirect(`Hotspots/viewspot/${spot._id}`);
 })
 
-app.delete('/Hotspots/viewspot/:id', async (req, res) => {
+app.delete('/Hotspots/viewspot/:id', verifyTokenAndAuthorize, async (req, res) => {
     const { id } = req.params;
     await Spot.findByIdAndDelete(id);
     res.redirect('/Hotspots/viewspot');
@@ -107,12 +110,65 @@ app.post("/login", async (req, res) => {
         if (correctPassword !== req.body.password) {
             return res.status(401).json("Wrong credentials!");
         }
-
-        // If credentials are correct, send the response
+        const accessToken = jwt.sign({
+            id: user._id
+        }, process.env.JWT_SEC,
+            { expiresIn: "3d" }
+        );
         const { password, ...others } = user._doc;
-        res.status(200).json(others);
+        res.status(200).json({ ...others, accessToken });
     } catch (err) {
         res.status(500).json(err);
+    }
+});
+
+
+app.post("/Hotspots/viewspot/:spotid/review/:id", verifyTokenAndAuthorize, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        const spot = await Spot.findById(req.params.spotid);
+        if (!spot) return res.status(404).json({ error: "Spot not found" });
+        const review = new Review({
+            body: req.body.body,
+            rating: req.body.rating,
+            author: req.params.id
+        });
+        await review.save();
+        spot.reviews.push(review);
+        await spot.save();
+        const contributionObject = {
+            spotID: spot,
+            reviewID: review
+        };
+        user.contribution.push(contributionObject);
+        await user.save();
+        res.status(201).json(spot);
+    } catch (err) {
+        res.status(500).json({ err: error.message });
+    }
+})
+
+app.delete("/Hotspots/viewspot/:spotid/review/:id", verifyTokenAndAuthorize, async (req, res) => {
+    try {
+        const spot = await Spot.findById(req.params.spotid);
+        const user = await User.findById(req.params.id);
+        const contributionToDelete = user.contribution.find(contribution =>
+            contribution.spotID.toString() === req.params.spotid
+        );
+
+        if (!contributionToDelete) {
+            return res.status(404).json({ error: "Contribution not found" });
+        }
+        const reviewIDToDelete = contributionToDelete.reviewID;
+        spot.reviews.pull(reviewIDToDelete);
+        await spot.save();
+        user.contribution.pull(contributionToDelete._id);
+        await user.save();
+        await Review.findByIdAndDelete(reviewIDToDelete);
+
+        res.status(201).json(spot);
+    } catch (err) {
+        res.status(500).json({ err: err.message });
     }
 });
 
