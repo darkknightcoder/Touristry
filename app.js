@@ -1,176 +1,107 @@
 const express = require('express');
-const app = express();
+const app=express();
+const path=require('path');
 const ejsMate = require('ejs-mate');
+const session=require('express-session');
+const flash=require("connect-flash");
 const mongoose = require('mongoose');
 const dotenv = require("dotenv");
 const Spot = require('./models/spots');
 const User = require('./models/user');
 const Review = require('./models/reviews');
-const { verifyToken, verifyTokenAndAuthorize } = require("./verifyToken")
-const CryptoJS = require("crypto-js");
-const jwt = require("jsonwebtoken");
+const ExpressError=require('./utils/ExpressError');
+const MongoDBStore=require('connect-mongo');
 const methodOverride = require('method-override');
+const passport = require('passport');
+const passLocal=require("passport-local")
+
+const userRoutes=require('./routes/users');
+const spotRoutes=require('./routes/spots');
+const reviewRoutes=require('./routes/reviews');
 
 dotenv.config();
+const Mongourl=process.env.MONGO_URL;
 
-mongoose
-    .connect(process.env.MONGO_URL)
-    .then(() => console.log("DB Connection Successful"))
-    .catch((err) => {
-        console.log(err);
-    });
+mongoose.connect(Mongourl,{
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});
+
+const db = mongoose.connection;
+db.on('error',console.error.bind(console, "connection error:"));
+db.once("open", () => {
+    console.log("Database connected");
+});
+
 
 app.engine('ejs', ejsMate)
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
+app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.json());
 
+const secret=process.env.SECRET || 'ashisjustagaynigga';
+
+ const store=MongoDBStore.create({
+    mongoUrl: Mongourl,
+    secret,
+    touchAfter: 24 * 60 *60,
+});
+
+store.on("error", function(e){
+    console.log("Session Store Error" ,e)
+})
+
+const sessionConfig = {
+    name: 'session',
+    secret,
+    resave: false,
+    saveUninitialized : true,
+    store,
+    cookie: {
+        httpOnly: true,
+        expires: Date.now() + 1000*60*60*24*7,
+        maxAge: 1000*60*60*24*7
+    }
+}
+
+app.use(session(sessionConfig));
+app.use(flash());
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new passLocal(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+app.use((req,res,next)=>{
+    res.locals.currentUser=req.user;
+    res.locals.success=req.flash('success');
+    res.locals.error=req.flash('error');
+    next();
+})
+
+app.use('/', userRoutes);
+app.use('/Hotspots/viewspot', spotRoutes);
+app.use('/Hotspots/viewspot/:id/reviews', reviewRoutes);
 
 app.get('/', (req, res) => {
     res.render('homepage');
 })
 
 
-app.get('/Hotspots/new', (req, res) => {
-    res.render('Hotspots/newSpot');
+app.all('*',(req,res,next)=>{
+    next(new ExpressError('Page not Found', 404 ))
 })
 
-app.post('/Hotspots', verifyTokenAndAuthorize, async (req, res) => {
-    const spot = new Spot(req.body.spot);
-    await spot.save();
-    console.log(spot);
-    res.redirect('/Hotspots/viewSpot');
+app.use((err,req,res,next)=>{
+    const { statusCode=500 }=err;
+    if(!err.message) err.message= 'Oh No, Something Went Wrong!'
+    res.status(statusCode).render('error', {err})
 })
-
-app.get('/Hotspots/viewspot', async (req, res) => {
-    const spots = await Spot.find({});
-    res.render('Hotspots/landingpage', { spots });
-})
-
-app.get('/Hotspots/viewspot/:id', async (req, res) => {
-    const spot = await Spot.findById(req.params.id);
-    res.render('Hotspots/viewSpot', { spot });
-})
-
-app.get('/Hotspots/viewspot/:id/edit', async (req, res) => {
-    const spot = await Spot.findById(req.params.id);
-    res.render('Hotspots/editpage', { spot });
-})
-
-app.put('/Hotspots/viewspot/:id', verifyTokenAndAuthorize, async (req, res) => {
-    const { id } = req.params;
-    const spot = await Spot.findByIdAndUpdate(id, { ...req.body.spot });
-    res.redirect(`Hotspots/viewspot/${spot._id}`);
-})
-
-app.delete('/Hotspots/viewspot/:id', verifyTokenAndAuthorize, async (req, res) => {
-    const { id } = req.params;
-    await Spot.findByIdAndDelete(id);
-    res.redirect('/Hotspots/viewspot');
-})
-
-app.get('/register', (req, res) => {
-    res.render('User/register');
-})
-
-app.post("/register", async (req, res) => {
-    const newUser = new User({
-        username: req.body.username,
-        email: req.body.email,
-        password: CryptoJS.AES.encrypt(
-            req.body.password,
-            process.env.PASS_SEC
-        ).toString(),
-    });
-    try {
-        const savedUser = await newUser.save();
-        res.status(201).json(savedUser);
-    } catch (err) {
-        res.status(500).json(err);
-    }
-});
-
-app.get("/login", async (req, res) => {
-    res.render("User/login");
-})
-
-app.post("/login", async (req, res) => {
-    try {
-        const user = await User.findOne({ username: req.body.username });
-
-        if (!user) {
-            return res.status(401).json("Wrong credentials!");
-        }
-
-        const hashedPassword = CryptoJS.AES.decrypt(user.password, process.env.PASS_SEC);
-        const correctPassword = hashedPassword.toString(CryptoJS.enc.Utf8);
-
-        if (correctPassword !== req.body.password) {
-            return res.status(401).json("Wrong credentials!");
-        }
-        const accessToken = jwt.sign({
-            id: user._id
-        }, process.env.JWT_SEC,
-            { expiresIn: "3d" }
-        );
-        const { password, ...others } = user._doc;
-        res.status(200).json({ ...others, accessToken });
-    } catch (err) {
-        res.status(500).json(err);
-    }
-});
-
-
-app.post("/Hotspots/viewspot/:spotid/review/:id", verifyTokenAndAuthorize, async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id);
-        const spot = await Spot.findById(req.params.spotid);
-        if (!spot) return res.status(404).json({ error: "Spot not found" });
-        const review = new Review({
-            body: req.body.body,
-            rating: req.body.rating,
-            author: req.params.id
-        });
-        await review.save();
-        spot.reviews.push(review);
-        await spot.save();
-        const contributionObject = {
-            spotID: spot,
-            reviewID: review
-        };
-        user.contribution.push(contributionObject);
-        await user.save();
-        res.status(201).json(spot);
-    } catch (err) {
-        res.status(500).json({ err: error.message });
-    }
-})
-
-app.delete("/Hotspots/viewspot/:spotid/review/:id", verifyTokenAndAuthorize, async (req, res) => {
-    try {
-        const spot = await Spot.findById(req.params.spotid);
-        const user = await User.findById(req.params.id);
-        const contributionToDelete = user.contribution.find(contribution =>
-            contribution.spotID.toString() === req.params.spotid
-        );
-
-        if (!contributionToDelete) {
-            return res.status(404).json({ error: "Contribution not found" });
-        }
-        const reviewIDToDelete = contributionToDelete.reviewID;
-        spot.reviews.pull(reviewIDToDelete);
-        await spot.save();
-        user.contribution.pull(contributionToDelete._id);
-        await user.save();
-        await Review.findByIdAndDelete(reviewIDToDelete);
-
-        res.status(201).json(spot);
-    } catch (err) {
-        res.status(500).json({ err: err.message });
-    }
-});
 
 
 app.listen(3000, () => {
