@@ -1,7 +1,7 @@
-<%- layout('boilerplate') %>
+<%- layout('layouts/boilerplate') %>
 <div class="col-8 offset-2">
     <h1 class="text-center">New Campground</h1>
-        <form action="/Hotspots" method="post">
+        <form action="/Hotspots/viewspot" method="post">
         <div class="form-floating mb-3">
             <input name="spot[name]" type="text" class="form-control" id="name" placeholder="Username">
             <label for="name">Spot Name</label>
