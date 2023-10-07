@@ -16,7 +16,7 @@ module.exports.isLoggedIn=(req,res,next)=>{
 module.exports.isAuthor = async (req, res, next)=>{
     const { id }=req.params;
     const spot= await Spot.findById(id);
-    if(!spot.author === req.user._id) {
+    if(!spot.author.equals(req.user._id)) {
         req.flash('error', 'You do not have permissions to do that!');
         return res.redirect(`/Hotspots/viewspot/${id}`)
     }

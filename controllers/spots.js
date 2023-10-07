@@ -1,4 +1,5 @@
 const Spot=require('../models/spots');
+const { cloudinary } = require('../cloudinary')
 
 module.exports.index= async (req, res) => {
     const spots = await Spot.find({});
@@ -11,9 +12,10 @@ module.exports.renderNewForm = (req, res) => {
 
 module.exports.createSpot = async (req, res, next) => {
     const spot = new Spot(req.body.spot);
+    spot.images=req.files.map(f => ({ url: f.path, filename: f.filename }));
     spot.author = req.user._id;
-    await spot.save();
     console.log(spot);
+    await spot.save();
     req.flash('success','Successfully created a new Campground');
     res.redirect(`/Hotspots/viewspot/${spot._id}`);
 }
@@ -45,7 +47,15 @@ module.exports.renderEditForm = async (req, res) => {
 module.exports.updateSpot =  async (req, res) => {
     const { id } = req.params;
     const spot = await Spot.findByIdAndUpdate(id, { ...req.body.spot });
+    const imgs = req.files.map(f => ({ url: f.path , filename: f.filename }));
+    spot.images.push(...imgs);
     await spot.save();
+    if(req.body.deleteImages) {
+        for(let filename of req.body.deleteImages){
+            await cloudinary.uploader.destroy(filename);
+        }
+        await spot.updateOne({ $pull: { images: { filename: { $in: req.body.deleteImages }}}})
+    }
     req.flash('success','Successfully updated Spot');
     res.redirect(`/Hotspots/viewspot/${spot._id}`);
 }

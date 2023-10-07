@@ -1,20 +1,21 @@
 const mongoose = require("mongoose");
 const Review=require('./reviews');
 const Schema=mongoose.Schema;
-// const ImageSchema = new mongoose.Schema({
-//     url: String,
-//     filename: String
-// });
 
-// ImageSchema.virtual('thumbnail').get(function () {
-//     return this.url.replace('/upload', '/upload/w_200');
-// });
+const ImageSchema = new Schema({
+    url: String,
+    filename: String
+});
+
+ImageSchema.virtual('thumbnail').get(function () {
+    return this.url.replace('/upload', '/upload/w_200');
+});
 
 const opts = { toJSON: { virtuals: true }};
 
 const spotSchema = new Schema({
     name: { type: String, required: true },
-    image: { type: String },
+    images: [ImageSchema],
     Type: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },
@@ -30,6 +31,12 @@ const spotSchema = new Schema({
         }
     ]
 }, opts);
+
+spotSchema.virtual('properties.popUpMarkup').get(function () {
+    return `
+    <strong><a href="/Hotspots/viewspot/${this._id}">${this.title}</a><strong>
+    <p>${this.description.substring(0, 20)}...</p>`
+});
 
 spotSchema.post('findOneAndDelete', async function(doc){
     if(doc){
