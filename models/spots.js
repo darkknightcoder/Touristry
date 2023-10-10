@@ -16,6 +16,17 @@ const opts = { toJSON: { virtuals: true }};
 const spotSchema = new Schema({
     name: { type: String, required: true },
     images: [ImageSchema],
+    geometry: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            required: true
+        },
+        coordinates: {
+            type: [Number] ,
+            required : true
+        }
+    },
     Type: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },

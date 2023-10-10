@@ -43,7 +43,7 @@ app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
-app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(path.join(__dirname, 'publicSheets')))
 app.use(express.json());
 
 const secret=process.env.SECRET || 'ashisjustagaynigga';
@@ -86,6 +86,10 @@ app.use((req,res,next)=>{
     res.locals.success=req.flash('success');
     res.locals.error=req.flash('error');
     next();
+})
+
+app.get('/helper' , (req,res)=>{
+    res.render('helperfFolder/login');
 })
 
 app.use('/', userRoutes);

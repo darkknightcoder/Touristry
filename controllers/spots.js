@@ -1,8 +1,11 @@
 const Spot=require('../models/spots');
+const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
+const mapBoxToken = process.env.MAPBOX_TOKEN;
+const geocoder = mbxGeocoding({ accessToken: mapBoxToken });
 const { cloudinary } = require('../cloudinary')
 
 module.exports.index= async (req, res) => {
-    const spots = await Spot.find({});
+    const spots = await Spot.find({}).populate([{ path: 'popupText', strictPopulate: false}]);
     res.render('Hotspots/landingpage', { spots });
 }
 
@@ -11,11 +14,16 @@ module.exports.renderNewForm = (req, res) => {
 }
 
 module.exports.createSpot = async (req, res, next) => {
+    const geoData = await geocoder.forwardGeocode({
+        query: req.body.spot.location,
+        limit: 1
+    }).send()
     const spot = new Spot(req.body.spot);
+    spot.geometry=geoData.body.features[0].geometry;
     spot.images=req.files.map(f => ({ url: f.path, filename: f.filename }));
     spot.author = req.user._id;
-    console.log(spot);
     await spot.save();
+    console.log(spot);
     req.flash('success','Successfully created a new Campground');
     res.redirect(`/Hotspots/viewspot/${spot._id}`);
 }
