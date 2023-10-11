@@ -14,6 +14,8 @@ router.route('/')
     .get(catchAsync(spots.index))
     .post(isLoggedIn,upload.array('images'), catchAsync(spots.createSpot))
 
+router.get('/spotmap' , spots.mapPage)   
+    
 router.get('/new', isLoggedIn, spots.renderNewForm)
 
 router.route('/:id')
