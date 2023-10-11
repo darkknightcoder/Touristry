@@ -9,6 +9,11 @@ module.exports.index= async (req, res) => {
     res.render('Hotspots/landingpage', { spots });
 }
 
+module.exports.mapPage= async(req,res)=>{
+    const spots = await Spot.find({}).populate([{ path: 'popupText', strictPopulate: false}]);
+    res.render('Hotspots/mapPage', { spots });
+}
+
 module.exports.renderNewForm = (req, res) => {
     res.render('Hotspots/newSpot');
 }
