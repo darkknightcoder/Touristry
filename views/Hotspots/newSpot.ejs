@@ -1,7 +1,12 @@
-<%- layout('boilerplate') %>
+<%- layout('layouts/boilerplate') %>
+<style>
+    body{
+        background-color: #fffafa;
+    }
+</style>
 <div class="col-8 offset-2">
     <h1 class="text-center">New Campground</h1>
-        <form action="/Hotspots" method="post">
+        <form action="/Hotspots/viewspot" method="post" enctype='multipart/form-data'>
         <div class="form-floating mb-3">
             <input name="spot[name]" type="text" class="form-control" id="name" placeholder="Username">
             <label for="name">Spot Name</label>
@@ -12,20 +17,18 @@
         </div>
         <div class="form-floating mb-3">
             <select name="spot[Type]" class="form-select" id="Type" aria-label="Floating label select example">
-                <option selected>Think of something later</option>
+                <option selected>Spot Type</option>
+                <option value="Tropical">Tropical</option>
+                <option value="Beachfront">Beachfront</option>
+                <option value="Farm">Farm</option>
+                <option value="Countryside">Countryside</option>
+                <option value="Caves">Caves</option>
+                <option value="Camping">Camping</option>
                 <option value="Bar/Pub">Bar/Pub</option>
                 <option value="Scenic">Scenic</option>
                 <option value="Monumnetal">Monumental</option>
             </select>
-            <label for="Type">Works with selects</label>
-        </div>
-        <div class="mb-3">
-            <label for="basic-url" class="form-label">Images</label>
-            <div class="input-group">
-                <span class="input-group-text" id="basic-addon3">Enter Image URL</span>
-                <input name="spot[image]" type="text" class="form-control" id="image" aria-describedby="basic-addon3 basic-addon4">
-            </div>
-            <!-- <div class="form-text" id="basic-addon4">Example help text goes outside the input group.</div> -->
+            <label for="Type">Select spot Type</label>
         </div>
         <div class="input-group mb-3">
             <span class="input-group-text">$</span>
@@ -36,8 +39,14 @@
             <textarea name="spot[description]" class="form-control" placeholder="Leave a comment here" id="description"></textarea>
             <label for="description">Description</label>
         </div>
+        <span>Add Images...</span>
+        <div class="input-group mb-3">
+            <input type="file" class="form-control" id="images" name="images" multiple>
+            <label class="input-group-text" for="images">Upload</label>
+          </div>
         <div class="d-grid">
-            <button class="btn btn-outline-primary">Submit</button>
+            <button class="btn btn-outline-primary mb-3">Add Spot</button>
         </div>
     </form>
+    <a href="/Hotspots/viewspot" class="btn btn-outline-info">Back to Spots view</a>
 </div>
